@@ -48,6 +48,7 @@
 #include <replacemacro.h>
 #include "wmsignalpropagator.h"
 #include <wmsignalrescale.h>
+#include <casound.h>
 
 #ifdef CAHMI
 #include <cahmiconfig.h>

@@ -277,4 +277,14 @@ public:
     virtual QWidget* createWidget(QWidget* parent);
 };
 
+class caSoundInterface : public CustomWidgetInterface_Monitors
+{
+    Q_OBJECT
+    Q_INTERFACES(QDesignerCustomWidgetInterface)
+
+public:
+    caSoundInterface(QObject* parent);
+    virtual QWidget* createWidget(QWidget* parent);
+};
+
 #endif

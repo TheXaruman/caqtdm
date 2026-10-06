@@ -631,6 +631,22 @@ caLineDrawInterface::caLineDrawInterface(QObject* parent) : CustomWidgetInterfac
     d_icon = qpixmap.scaled(70, 70, Qt::IgnoreAspectRatio, Qt::FastTransformation);
 }
 
+QWidget *caSoundInterface::createWidget(QWidget* parent)
+{
+    return new caSound(parent);
+}
+
+caSoundInterface::caSoundInterface(QObject* parent) : CustomWidgetInterface_Monitors(parent)
+{
+    strng name[1], type[1]  = {""};
+    longtext text[1] = {""};
+    QPixmap qpixmap = QPixmap(":pixmaps/sound.png");
+    d_icon = qpixmap.scaled(70, 70, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    d_domXml = XmlFunc("caSound", "casound", 0, 0, 40, 40, name, type, text, 0);
+    d_name = "caSound";
+    d_include = "caSound";
+    d_toolTip = "[Sound]";
+}
 
 CustomWidgetCollectionInterface_Monitors::CustomWidgetCollectionInterface_Monitors(QObject *parent): QObject(parent)
 {
@@ -653,6 +669,7 @@ CustomWidgetCollectionInterface_Monitors::CustomWidgetCollectionInterface_Monito
     d_plugins.append(new caWaterfallPlotInterface(this));
     d_plugins.append(new caScan2DInterface(this));
     d_plugins.append(new caLineDrawInterface(this));
+    d_plugins.append(new caSoundInterface(this));
 }
 
 QList<QDesignerCustomWidgetInterface*> CustomWidgetCollectionInterface_Monitors::customWidgets(void) const

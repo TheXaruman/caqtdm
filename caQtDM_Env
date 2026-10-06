@@ -39,14 +39,14 @@
   if [ -z "$QTDM_BININSTALL" ];   then  export  QTDM_BININSTALL=$EPICSEXTENSIONS/bin/$EPICS_HOST_ARCH;
   fi
   
-  if [ -z "$PYTHONVERSION" ];   then  export  PYTHONVERSION=2.6;
+  if [ -z "$PYTHONVERSION" ];   then  export  PYTHONVERSION=3.14;
   fi
   if [ -z "$PYTHONINCLUDE" ];   then  export  PYTHONINCLUDE=/usr/include/python$PYTHONVERSION;
   fi
   if [ -z "$PYTHONLIB" ];   then  export  PYTHONLIB=/usr/lib/;
   fi 
 
-  if [ -z "$ZMQ" ];   then  export  ZMQ=/usr/local;
+  if [ -z "$ZMQ" ];   then  export  ZMQ=/usr;
   fi 
   if [ -z "$ZMQINC" ];   then  export  ZMQINC=$ZMQ/include;
   fi 

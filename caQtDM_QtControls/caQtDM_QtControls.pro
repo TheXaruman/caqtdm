@@ -154,7 +154,8 @@ SOURCES	+= \
     src/wmsignalpropagator.cpp \
     src/replacemacro.cpp \
     src/textedit.cpp \
-    src/wmsignalrescale.cpp
+    src/wmsignalrescale.cpp \
+    src/casound.cpp
 
 cahmi{
 SOURCES	+= \
@@ -291,7 +292,8 @@ HEADERS	+= \
     src/caWidgetInterface.h \
     src/addevent.h \
     src/animationcode.h \
-    src/hideobjectcode.h
+    src/hideobjectcode.h \
+    src/casound.h
 
 ADL_EDL_FILES {
     HEADERS	+= src/parseotherfile.h
