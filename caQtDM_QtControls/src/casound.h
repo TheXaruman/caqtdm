@@ -3,8 +3,7 @@
 
 #include <QWidget>
 #include <qtcontrols_global.h>
-#include <fileFunctions.h>
-#include <searchfile.h>
+
 
 class QTCON_EXPORT caSound : public QWidget {
     Q_OBJECT
@@ -21,8 +20,14 @@ public:
 
     caSound(QWidget *parent);
 
+public slots:
+    void play();
+
 private:
     QString thisfile;
-    int thisvolume;
+    QString resolvedFile;
+    double thisvolume;
+    class QMediaPlayer *player;
+    class QAudioOutput *audioOutput;
 };
 #endif
