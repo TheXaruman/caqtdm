@@ -3,7 +3,8 @@
 #include <searchfile.h>
 #include <QMediaPlayer>
 #include <QAudioOutput>
-
+#include <QAudioDevice>
+#include <QMediaDevices>
 
 Q_LOGGING_CATEGORY(caSoundLog, "caqtdm.widgets.casound")
 
@@ -25,13 +26,13 @@ void caSound::setfile(const QString &file){
     searchFile searcher(file);
     QString foundPath = searcher.findFile();
     if (!foundPath.isNull()) {
-        qCDebug(caSoundLog) << "caSound:" << "Found file: " << foundPath;
+        qCDebug(caSoundLog) << "Found file: " << foundPath;
         resolvedFile = foundPath;
         this->thisfile = file;
     } else {
-        qCDebug(caSoundLog) << "caSound:" << "Didn't find file";
+        qCDebug(caSoundLog) << "Didn't find file";
         resolvedFile.clear();
-        qCDebug(caSoundLog) << "caSound:" << "Cleared resolvedFile";
+        qCDebug(caSoundLog) << "Cleared resolvedFile";
     }
 }
 
@@ -48,29 +49,30 @@ int caSound::volume() const{
 }
 
 void caSound::play() {
-    qCDebug(caSoundLog) << "caSound:" << "Entered play";
+    qCDebug(caSoundLog) << "Entered play";
     if (resolvedFile.isEmpty()) {
-        qCDebug(caSoundLog) << "caSound:" << "No File to play";
-        qCDebug(caSoundLog) << "caSound:" << "Returning without playing sound";
+        qCDebug(caSoundLog) << "No File to play";
+        qCDebug(caSoundLog) << "Returning without playing sound";
         return;
     }
     if (this->thisvolume == 0.0) {
-        qCDebug(caSoundLog) << "caSound:" << "Volume: " << this->thisvolume;
-        qCDebug(caSoundLog) << "caSound:" << "Sound is mute";
-        qCDebug(caSoundLog) << "caSound:" << "Returning without playing sound";
+        qCDebug(caSoundLog) << "Volume: " << this->thisvolume;
+        qCDebug(caSoundLog) << "Sound is mute";
+        qCDebug(caSoundLog) << "Returning without playing sound";
         return;
     }
-    if (player->audioOutput() != audioOutput) {
+    if (player->audioOutput()->device().isDefault()) {
+        audioOutput->setDevice(QMediaDevices::defaultAudioOutput());
         player->setAudioOutput(audioOutput);
-        qCDebug(caSoundLog) << "caSound:" << "Set audio output to: " << audioOutput;
+        qCDebug(caSoundLog) << "Set audio output to: " << audioOutput;
     }
     player->setSource(QUrl::fromLocalFile(resolvedFile));
     if (audioOutput->volume() != (this->thisvolume / 100.0) && (this->thisvolume / 100.0) <= 1.0) {
         audioOutput->setVolume(this->thisvolume / 100.0);
-        qCDebug(caSoundLog) << "caSound:" << "Set volume to: " << this->thisvolume / 100.0;
+        qCDebug(caSoundLog) << "Set volume to: " << this->thisvolume / 100.0;
     }
     if (!player->source().isEmpty()) {
-        qCDebug(caSoundLog) << "caSound:" << "Start playing sound";
+        qCDebug(caSoundLog) << "Start playing sound";
         player->play();
     }
 }
