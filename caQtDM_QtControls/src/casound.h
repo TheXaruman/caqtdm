@@ -28,6 +28,8 @@ private:
     QString resolvedFile;
     double thisvolume;
     class QMediaPlayer *player;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     class QAudioOutput *audioOutput;
+#endif
 };
 #endif

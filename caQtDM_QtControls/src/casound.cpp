@@ -2,13 +2,12 @@
 #include <fileFunctions.h>
 #include <searchfile.h>
 #include <QMediaPlayer>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#include <QMediaContent>
+#else
 #include <QAudioOutput>
 #include <QAudioDevice>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QAudioDeviceInfo>
-#else
 #include <QMediaDevices>
-#include <QAudioDevice>
 #endif
 
 Q_LOGGING_CATEGORY(caSoundLog, "caqtdm.widgets.casound")
@@ -16,8 +15,10 @@ Q_LOGGING_CATEGORY(caSoundLog, "caqtdm.widgets.casound")
 caSound::caSound(QWidget *parent) : QWidget{parent}
 {
     player = new QMediaPlayer;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     audioOutput = new QAudioOutput;
     player->setAudioOutput(audioOutput);
+#endif
     this->thisvolume = 50;
 }
 
@@ -66,12 +67,19 @@ void caSound::play() {
         qCDebug(caSoundLog) << "Returning without playing sound";
         return;
     }
-    if (player->audioOutput()->device().isDefault()) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    audioOutput->setDevice(QAudioDeviceInfo::defaultOutputDevice());
+    player->setMedia(QUrl::fromLocalFile(resolvedFile));
+    if (player->volume() != static_cast<int>(this->thisvolume) && this->thisvolume <= 100.0) {
+        player->setVolume(static_cast<int>(this->thisvolume));
+        qCDebug(caSoundLog) << "Set volume to: " << this->thisvolume;
+    }
+    if (!player->media().isNull()) {
+        qCDebug(caSoundLog) << "Start playing sound";
+        player->play();
+    }
 #else
+    if (player->audioOutput()->device().isDefault()) {
         audioOutput->setDevice(QMediaDevices::defaultAudioOutput());
-#endif
         player->setAudioOutput(audioOutput);
         qCDebug(caSoundLog) << "Set audio output to: " << audioOutput;
     }
@@ -84,4 +92,5 @@ void caSound::play() {
         qCDebug(caSoundLog) << "Start playing sound";
         player->play();
     }
+#endif
 }
