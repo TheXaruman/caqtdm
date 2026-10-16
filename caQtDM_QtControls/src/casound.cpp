@@ -4,7 +4,12 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QAudioDevice>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#include <QAudioDeviceInfo>
+#else
 #include <QMediaDevices>
+#include <QAudioDevice>
+#endif
 
 Q_LOGGING_CATEGORY(caSoundLog, "caqtdm.widgets.casound")
 
@@ -62,7 +67,11 @@ void caSound::play() {
         return;
     }
     if (player->audioOutput()->device().isDefault()) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    audioOutput->setDevice(QAudioDeviceInfo::defaultOutputDevice());
+#else
         audioOutput->setDevice(QMediaDevices::defaultAudioOutput());
+#endif
         player->setAudioOutput(audioOutput);
         qCDebug(caSoundLog) << "Set audio output to: " << audioOutput;
     }
