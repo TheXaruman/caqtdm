@@ -1,9 +1,18 @@
 #ifndef CASOUND_H
 #define CASOUND_H
-
 #include <QWidget>
+#include <QBuffer>
 #include <qtcontrols_global.h>
 
+class QAudioDecoder;
+class QAudioFormat; // no multimedia includes here: header is used by modules without QT += multimedia
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+class QAudioOutput;
+typedef QAudioOutput caSoundSink; // Qt5: QAudioOutput is the PCM sink
+#else
+class QAudioSink;
+typedef QAudioSink caSoundSink;
+#endif
 
 class QTCON_EXPORT caSound : public QWidget {
     Q_OBJECT
@@ -19,17 +28,31 @@ public:
     int volume() const;
 
     caSound(QWidget *parent);
+    ~caSound();
 
 public slots:
     void play();
+    void createBuffer();
+
+private slots:
+    void onFileChange(const QString &file);
+    void onFinishedBuffer();
+    void onDecoderError();
+
+signals:
+    void fileChanged(const QString &file);
 
 private:
+    bool isDecoding() const;
+
     QString thisfile;
     QString resolvedFile;
+    QBuffer *audioBuffer;
+    QByteArray m_pcm;
     double thisvolume;
-    class QMediaPlayer *player;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    class QAudioOutput *audioOutput;
-#endif
+    QAudioDecoder *m_decoder;
+    QAudioFormat *m_format;
+    caSoundSink *audio = nullptr;
+    bool m_playPending = false;
 };
 #endif
