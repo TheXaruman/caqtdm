@@ -84,6 +84,10 @@ void caSound::onFileChange(const QString &file) {
     if (isDecoding()) {
         m_decoder->stop();
     }
+    if (audio != nullptr) {
+        audio->stop();
+        delete audio;
+    }
     m_pcm.clear();
     *m_format = QAudioFormat();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
