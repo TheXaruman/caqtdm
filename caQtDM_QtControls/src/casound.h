@@ -5,10 +5,10 @@
 #include <qtcontrols_global.h>
 
 class QAudioDecoder;
-class QAudioFormat; // no multimedia includes here: header is used by modules without QT += multimedia
+class QAudioFormat;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 class QAudioOutput;
-typedef QAudioOutput caSoundSink; // Qt5: QAudioOutput is the PCM sink
+typedef QAudioOutput caSoundSink;
 #else
 class QAudioSink;
 typedef QAudioSink caSoundSink;
@@ -32,12 +32,12 @@ public:
 
 public slots:
     void play();
-    void createBuffer();
 
 private slots:
     void onFileChange(const QString &file);
     void onFinishedBuffer();
     void onDecoderError();
+    void createBuffer();
 
 signals:
     void fileChanged(const QString &file);
@@ -49,7 +49,7 @@ private:
     QString resolvedFile;
     QBuffer *audioBuffer;
     QByteArray m_pcm;
-    double thisvolume;
+    int thisvolume;
     QAudioDecoder *m_decoder;
     QAudioFormat *m_format;
     caSoundSink *audio = nullptr;

@@ -63,7 +63,10 @@ QString caSound::file() const{
 }
 
 void caSound::setvolume(const int &volume){
-    this->thisvolume = volume;
+    thisvolume = qBound(0, volume, 100);
+    if (audio != nullptr) {
+        audio->setVolume(thisvolume / 100.0);
+    }
 }
 
 int caSound::volume() const{
@@ -87,6 +90,7 @@ void caSound::onFileChange(const QString &file) {
     if (audio != nullptr) {
         audio->stop();
         delete audio;
+        audio = nullptr;
     }
     m_pcm.clear();
     *m_format = QAudioFormat();
@@ -142,7 +146,7 @@ void caSound::play() {
         qCDebug(caSoundLog) << "Returning without playing sound";
         return;
     }
-    if (this->thisvolume == 0.0) {
+    if (this->thisvolume == 0) {
         qCDebug(caSoundLog) << "Volume: " << this->thisvolume;
         qCDebug(caSoundLog) << "Sound is mute";
         qCDebug(caSoundLog) << "Returning without playing sound";
@@ -170,9 +174,6 @@ void caSound::play() {
         return;
     }
     audio = new caSoundSink(device, *m_format, this);
-    if (this->thisvolume <= 100.0) {
-        audio->setVolume(this->thisvolume / 100.0);
-    }
     audioBuffer->seek(0);
     qCDebug(caSoundLog) << "Start playing sound";
     audio->start(audioBuffer);
