@@ -17,14 +17,14 @@ typedef QAudioSink caSoundSink;
 class QTCON_EXPORT caSound : public QWidget {
     Q_OBJECT
 
-    Q_PROPERTY(QString file READ file WRITE setfile)
-    Q_PROPERTY(int volume READ volume WRITE setvolume)
+    Q_PROPERTY(QString file READ file WRITE setFile)
+    Q_PROPERTY(int volume READ volume WRITE setVolume)
 
 public:
-    void setfile(const QString &file);
+    void setFile(const QString &file);
     QString file() const;
 
-    void setvolume(const int &volume);
+    void setVolume(int volume);
     int volume() const;
 
     caSound(QWidget *parent);
@@ -34,10 +34,10 @@ public slots:
     void play();
 
 private slots:
-    void onFileChange(const QString &file);
-    void onFinishedBuffer();
+    void onFileChanged(const QString &file);
+    void onDecodingFinished();
     void onDecoderError();
-    void createBuffer();
+    void onBufferReady();
 
 signals:
     void fileChanged(const QString &file);
@@ -45,14 +45,14 @@ signals:
 private:
     bool isDecoding() const;
 
-    QString thisfile;
-    QString resolvedFile;
-    QBuffer *audioBuffer;
+    QString thisFile;
+    QString m_resolvedFile;
+    QBuffer *m_audioBuffer;
     QByteArray m_pcm;
-    int thisvolume;
+    int thisVolume;
     QAudioDecoder *m_decoder;
     QAudioFormat *m_format;
-    caSoundSink *audio = nullptr;
+    caSoundSink *m_sink = nullptr;
     bool m_playPending = false;
 };
 #endif

@@ -8,7 +8,8 @@ SOURCES += tst_qtcontrols.cpp \
     tst_gensoftpv.cpp \
     tst_canumeric.cpp \
     tst_caspinbox.cpp \
-    tst_caapplynumeric.cpp
+    tst_caapplynumeric.cpp \
+    tst_casound.cpp
 
 HEADERS += tst_pvdialog.h \
     tst_gensoftpv.h \
@@ -16,6 +17,7 @@ HEADERS += tst_pvdialog.h \
     tst_caspinbox.h \
     tst_caapplynumeric.h \
     tst_numeric_suite.h \
+    tst_casound.h \
     fakeformwindow.h
 
 # --- Tested classes below ---

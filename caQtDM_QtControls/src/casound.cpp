@@ -18,28 +18,28 @@ Q_LOGGING_CATEGORY(caSoundLog, "caqtdm.widgets.casound")
 
 caSound::caSound(QWidget *parent) : QWidget{parent}
 {
-    audioBuffer = new QBuffer(this);
+    m_audioBuffer = new QBuffer(this);
     m_format = new QAudioFormat();
     m_decoder = new QAudioDecoder(this);
-    connect(m_decoder, &QAudioDecoder::bufferReady, this, &caSound::createBuffer);
-    connect(m_decoder, &QAudioDecoder::finished, this, &caSound::onFinishedBuffer);
+    connect(m_decoder, &QAudioDecoder::bufferReady, this, &caSound::onBufferReady);
+    connect(m_decoder, &QAudioDecoder::finished, this, &caSound::onDecodingFinished);
     connect(m_decoder, QOverload<QAudioDecoder::Error>::of(&QAudioDecoder::error),
             this, &caSound::onDecoderError);
-    connect(this, &caSound::fileChanged, this, &caSound::onFileChange);
-    this->thisvolume = 50;
+    connect(this, &caSound::fileChanged, this, &caSound::onFileChanged);
+    thisVolume = 50;
 }
 
 caSound::~caSound()
 {
-    if (audio != nullptr) {
-        audio->stop();
-        delete audio;
+    if (m_sink != nullptr) {
+        m_sink->stop();
+        delete m_sink;
     }
     delete m_format;
 }
 
-void caSound::setfile(const QString &file){
-    if (file == this->thisfile) {
+void caSound::setFile(const QString &file){
+    if (file == thisFile) {
         return;
     }
     fileFunctions fileFunc;
@@ -48,29 +48,29 @@ void caSound::setfile(const QString &file){
     QString foundPath = searcher.findFile();
     if (!foundPath.isNull()) {
         qCDebug(caSoundLog) << "Found file: " << foundPath;
-        resolvedFile = foundPath;
-        this->thisfile = file;
+        m_resolvedFile = foundPath;
+        thisFile = file;
     } else {
         qCDebug(caSoundLog) << "Didn't find file";
-        resolvedFile.clear();
-        qCDebug(caSoundLog) << "Cleared resolvedFile";
+        m_resolvedFile.clear();
+        qCDebug(caSoundLog) << "Cleared resolved file";
     }
-    emit fileChanged(resolvedFile);
+    emit fileChanged(m_resolvedFile);
 }
 
 QString caSound::file() const{
-    return this->thisfile;
+    return thisFile;
 }
 
-void caSound::setvolume(const int &volume){
-    thisvolume = qBound(0, volume, 100);
-    if (audio != nullptr) {
-        audio->setVolume(thisvolume / 100.0);
+void caSound::setVolume(int volume){
+    thisVolume = qBound(0, volume, 100);
+    if (m_sink != nullptr) {
+        m_sink->setVolume(thisVolume / 100.0);
     }
 }
 
 int caSound::volume() const{
-    return this->thisvolume;
+    return thisVolume;
 }
 
 bool caSound::isDecoding() const {
@@ -81,16 +81,16 @@ bool caSound::isDecoding() const {
 #endif
 }
 
-void caSound::onFileChange(const QString &file) {
+void caSound::onFileChanged(const QString &file) {
     if (file.isEmpty())
         return;
     if (isDecoding()) {
         m_decoder->stop();
     }
-    if (audio != nullptr) {
-        audio->stop();
-        delete audio;
-        audio = nullptr;
+    if (m_sink != nullptr) {
+        m_sink->stop();
+        delete m_sink;
+        m_sink = nullptr;
     }
     m_pcm.clear();
     *m_format = QAudioFormat();
@@ -102,13 +102,13 @@ void caSound::onFileChange(const QString &file) {
     m_decoder->start();
 }
 
-void caSound::createBuffer() {
-    QAudioBuffer received_byte = m_decoder->read();
-    if (!received_byte.isValid()) {
+void caSound::onBufferReady() {
+    QAudioBuffer chunk = m_decoder->read();
+    if (!chunk.isValid()) {
         return;
     }
     if (!m_format->isValid()) {
-        *m_format = received_byte.format();
+        *m_format = chunk.format();
         qCDebug(caSoundLog) << m_format->sampleRate();
         qCDebug(caSoundLog) << m_format->channelCount();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -117,17 +117,17 @@ void caSound::createBuffer() {
         qCDebug(caSoundLog) << m_format->sampleFormat();
 #endif
     }
-    m_pcm.append(received_byte.constData<char>(), received_byte.byteCount());
+    m_pcm.append(chunk.constData<char>(), chunk.byteCount());
 }
 
-void caSound::onFinishedBuffer(){
-    if (audioBuffer->isOpen()) {
-        audioBuffer->close();
+void caSound::onDecodingFinished(){
+    if (m_audioBuffer->isOpen()) {
+        m_audioBuffer->close();
     }
     if (!m_pcm.isEmpty()) {
-        audioBuffer->setBuffer(&m_pcm);
+        m_audioBuffer->setBuffer(&m_pcm);
     }
-    audioBuffer->open(QIODevice::ReadOnly);
+    m_audioBuffer->open(QIODevice::ReadOnly);
     if (m_playPending) {
         m_playPending = false;
         play();
@@ -141,13 +141,13 @@ void caSound::onDecoderError() {
 
 void caSound::play() {
     qCDebug(caSoundLog) << "Entered play";
-    if (resolvedFile.isEmpty()) {
+    if (m_resolvedFile.isEmpty()) {
         qCDebug(caSoundLog) << "No File to play";
         qCDebug(caSoundLog) << "Returning without playing sound";
         return;
     }
-    if (this->thisvolume == 0) {
-        qCDebug(caSoundLog) << "Volume: " << this->thisvolume;
+    if (thisVolume == 0) {
+        qCDebug(caSoundLog) << "Volume: " << thisVolume;
         qCDebug(caSoundLog) << "Sound is mute";
         qCDebug(caSoundLog) << "Returning without playing sound";
         return;
@@ -157,10 +157,10 @@ void caSound::play() {
         m_playPending = true;
         return;
     }
-    if (audio != nullptr) {
-        audio->stop();
-        delete audio;
-        audio = nullptr;
+    if (m_sink != nullptr) {
+        m_sink->stop();
+        delete m_sink;
+        m_sink = nullptr;
     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const QAudioDeviceInfo device = QAudioDeviceInfo::defaultOutputDevice();
@@ -173,8 +173,8 @@ void caSound::play() {
         qCWarning(caSoundLog) << "Audio format not supported by output device" << deviceName;
         return;
     }
-    audio = new caSoundSink(device, *m_format, this);
-    audioBuffer->seek(0);
+    m_sink = new caSoundSink(device, *m_format, this);
+    m_audioBuffer->seek(0);
     qCDebug(caSoundLog) << "Start playing sound";
-    audio->start(audioBuffer);
+    m_sink->start(m_audioBuffer);
 }

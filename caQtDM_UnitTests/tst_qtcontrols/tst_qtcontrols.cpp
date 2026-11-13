@@ -32,6 +32,7 @@
 #include "tst_caspinbox.h"
 #include "tst_caapplynumeric.h"
 #include "tst_pvdialog.h"
+#include "tst_casound.h"
 
 int main(int argc, char **argv)
 {
@@ -67,6 +68,11 @@ int main(int argc, char **argv)
 
     {
         TestCaApplyNumeric tc;
+        status |= QTest::qExec(&tc, argc, argv);
+    }
+
+    {
+        TestCaSound tc;
         status |= QTest::qExec(&tc, argc, argv);
     }
 
